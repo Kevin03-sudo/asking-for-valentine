@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Valentine?</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg: #ffe6e6;
+      --card: #fff;
+      --accent: #cc0000;
+      --yes: #ff4d4d;
+      --muted: #666;
+    }
+
+    html,body{
+      height:100%;
+      margin:0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      background: var(--card);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      max-width: 420px;
+      width: 100%;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: var(--accent);
+      margin:0;
+      font-size:1.25rem;
+    }
+
+    .buttons {
+      margin-top: 30px;
+      position: relative;
+      height: 110px;
+      min-height: 80px;
+    }
+
+    #yesBtn {
+      font-size: 18px;
+      padding: 12px 36px;
+      background-color: var(--yes);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 6px 12px rgba(255,77,77,0.18);
+    }
+
+    #yesBtn:focus {
+      box-shadow: 0 0 0 4px rgba(255,77,77,0.18);
+    }
+
+    #noBtn {
+      font-size: 13px;
+      padding: 8px 14px;
+      background-color: #cccccc;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      position: absolute;
+      left: calc(60%); /* initial placement - will be updated by script */
+      top: 20px;
+      transition: left 0.28s ease, top 0.28s ease, transform 0.12s ease;
+      transform: translate(-50%, 0);
+      outline: none;
+    }
+
+    #noBtn:focus {
+      transform: translate(-50%, 0) scale(1.02);
+    }
+
+    .shy-text {
+      margin-top: 20px;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .heart {
+      font-size: 100px;
+      color: red;
+      margin-top: 20px;
+      display: none;
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.6s ease, transform 0.6s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .heart.show {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .result-img {
+      display: none;
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 12px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .result-img.show {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width:420px){
+      .container { padding: 20px; }
+      .heart { font-size: 76px; }
+      #yesBtn { padding: 10px 28px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="dialog" aria-labelledby="valTitle" aria-modal="true">
+    <h1 id="valTitle">Pheladi, will you be my valentine? ❤️</h1>
+
+    <div class="buttons" id="buttons">
+      <button id="yesBtn" type="button">YES</button>
+      <button id="noBtn" type="button" aria-label="No, thank you" tabindex="0">no</button>
+    </div>
+
+    <div class="shy-text">no seems a bit shy</div>
+
+    <div class="heart" id="heart" aria-hidden="true">❤️</div>
+    <img src="us.jpg" alt="Us together" class="result-img" id="resultImg" loading="lazy">
+  </div>
+
+  <script>
+    (function(){
+      const container = document.querySelector('.container');
+      const buttons = document.getElementById('buttons');
+      const noBtn = document.getElementById('noBtn');
+      const yesBtn = document.getElementById('yesBtn');
+      const heart = document.getElementById('heart');
+      const resultImg = document.getElementById('resultImg');
+
+      // Helper: move "no" button to a random position INSIDE the buttons container
+      function moveNoButton() {
+        // ensure button has layout before measuring
+        const btnRect = noBtn.getBoundingClientRect();
+        const containerRect = buttons.getBoundingClientRect();
+
+        // compute available space where top-left of button can be placed
+        const padding = 8; // small padding from edges
+        const maxLeft = Math.max(containerRect.width - btnRect.width - padding, padding);
+        const maxTop  = Math.max(containerRect.height - btnRect.height - padding, padding);
+
+        // choose random position within available area
+        const left = Math.random() * maxLeft + padding;
+        const top  = Math.random() * maxTop + padding;
+
+        // set absolute position inside buttons container (account for transform translate(-50%))
+        // remove transform while positioning for accuracy, but keep it mild for hover/focus
+        noBtn.style.transform = 'translate(0, 0)';
+        noBtn.style.left = `${left}px`;
+        noBtn.style.top = `${top}px`;
+
+        // restore slight translate to keep button visually centered around its own position
+        // small timeout avoids jump on immediate set
+        setTimeout(()=> {
+          noBtn.style.transform = 'translate(0, 0)';
+        }, 0);
+      }
+
+      // Move when mouseover, focus, touchstart, or keyboard attempts
+      noBtn.addEventListener('mouseover', moveNoButton);
+      noBtn.addEventListener('focus', moveNoButton);
+      noBtn.addEventListener('touchstart', (e)=>{
+        e.preventDefault();
+        moveNoButton();
+      }, {passive:false});
+
+      noBtn.addEventListener('keydown', (e) => {
+        // If user tries to activate with keyboard, dodge instead
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          moveNoButton();
+        }
+      });
+
+      // Make sure button stays inside on window resize (reposition to center-ish)
+      window.addEventListener('resize', () => {
+        // small delay to allow layout to settle
+        setTimeout(() => {
+          // if no explicit left/top set yet, center it
+          if (!noBtn.style.left) {
+            noBtn.style.left = '60%';
+            noBtn.style.top = '20px';
+            noBtn.style.transform = 'translate(-50%, 0)';
+          } else {
+            // reposition to keep inside if necessary
+            const containerRect = buttons.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
+            const left = Math.min(Math.max(parseFloat(noBtn.style.left||0), 8), containerRect.width - btnRect.width - 8);
+            const top  = Math.min(Math.max(parseFloat(noBtn.style.top||0), 8), containerRect.height - btnRect.height - 8);
+            noBtn.style.left = `${left}px`;
+            noBtn.style.top = `${top}px`;
+          }
+        }, 50);
+      });
+
+      // Show heart and image when "yes" is clicked; disable further interactions
+      yesBtn.addEventListener('click', () => {
+        heart.classList.add('show');
+        resultImg.classList.add('show');
+
+        // disable buttons for clarity
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        noBtn.setAttribute('aria-hidden','true');
+
+        // optional flourish: focus the heart for screen readers after it's visible
+        heart.setAttribute('aria-hidden','false');
+        heart.setAttribute('role','img');
+        heart.setAttribute('aria-label','A big heart');
+        heart.scrollIntoView({behavior: 'smooth', block: 'center'});
+      });
+
+      // Ensure initial placement is sane on load (center-ish)
+      window.addEventListener('load', () => {
+        // give layout a moment
+        setTimeout(() => {
+          // If file is displayed on very small screens, ensure the button initial position doesn't overflow
+          const containerRect = buttons.getBoundingClientRect();
+          const btnRect = noBtn.getBoundingClientRect();
+          if (btnRect.right > containerRect.right || btnRect.left < containerRect.left) {
+            noBtn.style.left = `${Math.max(containerRect.width * 0.6 - btnRect.width/2, 8)}px`;
+            noBtn.style.top = `20px`;
+            noBtn.style.transform = 'translate(0, 0)';
+          }
+        }, 20);
+      });
+    })();
+  </script>
+</body>
+</html>
